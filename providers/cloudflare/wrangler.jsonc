@@ -1,0 +1,11 @@
+{
+  "name": "action-space-code",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-12",
+  "worker_loaders": [{ "binding": "LOADER" }],
+  "vars": {
+    "BROKER_URL": "https://YOUR-CONTROL-PLANE/internal/code-callback",
+  },
+  "observability": { "enabled": true },
+  "limits": { "cpu_ms": 5000 },
+}

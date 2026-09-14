@@ -1,0 +1,15 @@
+{
+  "name": "action-space-executor-runner",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@executor-js/sdk": "1.6.8",
+    "@executor-js/execution": "1.6.8",
+    "@executor-js/runtime-quickjs": "1.6.8",
+    "effect": "4.0.0-beta.59",
+    "quickjs-emscripten": "0.32.0"
+  },
+  "overrides": {
+    "quickjs-emscripten": "0.32.0"
+  }
+}

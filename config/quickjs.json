@@ -1,0 +1,49 @@
+{
+  "local": false,
+  "principals": [
+    {
+      "tokenEnv": "ACTION_SPACE_TOKEN",
+      "auth": {
+        "tenant": "local",
+        "actor": "agent",
+        "thread": "demo",
+        "grants": [
+          "code.execute",
+          "data.read",
+          "resources.read",
+          "resources.write"
+        ],
+        "reviewer": false
+      }
+    }
+  ],
+  "providers": [
+    {
+      "kind": "quickjs",
+      "candidate": {
+        "id": "quickjs",
+        "capability": "code_execution",
+        "lifecycle": "invocation",
+        "profiles": ["code-js-v1", "code-mcp-js-v1"],
+        "region": "local",
+        "trust": "development",
+        "available": true,
+        "capacity": 8,
+        "maxMemoryBytes": 536870912,
+        "estimate": {
+          "cost": null,
+          "startupMs": null,
+          "warmStartupMs": null,
+          "transferMs": null
+        }
+      }
+    }
+  ],
+  "scheduler": {
+    "region": "local",
+    "trust": "development",
+    "tenantConcurrency": 4,
+    "globalConcurrency": 24,
+    "maxCost": null
+  }
+}

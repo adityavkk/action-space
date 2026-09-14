@@ -1,0 +1,32 @@
+{
+  "local": true,
+  "principals": [
+    {
+      "tokenEnv": "ACTION_SPACE_TOKEN",
+      "auth": {
+        "tenant": "local",
+        "actor": "agent",
+        "thread": "demo",
+        "grants": [
+          "code.execute",
+          "sandbox.run",
+          "sandbox.shell",
+          "sandbox.read",
+          "context.manage",
+          "data.read",
+          "resources.read",
+          "resources.write"
+        ],
+        "reviewer": false
+      }
+    }
+  ],
+  "providers": [],
+  "scheduler": {
+    "region": "local",
+    "trust": "development",
+    "tenantConcurrency": 4,
+    "globalConcurrency": 24,
+    "maxCost": null
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "local": true,
+  "principals": [
+    {
+      "tokenEnv": "ACTION_SPACE_TOKEN",
+      "auth": {
+        "tenant": "local",
+        "actor": "agent",
+        "thread": "demo",
+        "grants": [
+          "code.execute",
+          "sandbox.run",
+          "sandbox.shell",
+          "sandbox.read",
+          "context.manage",
+          "data.read",
+          "resources.read",
+          "resources.write"
+        ],
+        "reviewer": false
+      }
+    }
+  ],
+  "scheduler": {
+    "region": "local",
+    "trust": "development",
+    "tenantConcurrency": 4,
+    "globalConcurrency": 24,
+    "maxCost": null
+  },
+  "providers": [
+    {
+      "kind": "cloudflare",
+      "gatewayUrl": "https://YOUR-GATEWAY.workers.dev",
+      "brokerUrl": "https://YOUR-CONTROL-PLANE/internal/code-callback",
+      "candidate": {
+        "id": "cloudflare",
+        "capability": "code_execution",
+        "lifecycle": "invocation",
+        "profiles": ["code-js-v1"],
+        "region": "operator-selected",
+        "trust": "development",
+        "available": false,
+        "capacity": 4,
+        "maxMemoryBytes": 134217728,
+        "estimate": {
+          "cost": null,
+          "startupMs": null,
+          "warmStartupMs": null,
+          "transferMs": null
+        }
+      }
+    },
+    {
+      "kind": "e2b",
+      "timeoutMs": 300000,
+      "recipes": { "python3": "YOUR-REVIEWED-E2B-TEMPLATE" },
+      "candidates": [
+        {
+          "id": "e2b-ephemeral",
+          "capability": "sandbox",
+          "lifecycle": "ephemeral",
+          "profiles": ["sandbox-python-ephemeral-v1"],
+          "region": "operator-selected",
+          "trust": "development",
+          "available": false,
+          "capacity": 4,
+          "maxMemoryBytes": 536870912,
+          "estimate": {
+            "cost": null,
+            "startupMs": null,
+            "warmStartupMs": null,
+            "transferMs": null
+          }
+        },
+        {
+          "id": "e2b-persistent",
+          "capability": "sandbox",
+          "lifecycle": "persistent",
+          "profiles": ["sandbox-linux-persistent-v1"],
+          "region": "operator-selected",
+          "trust": "development",
+          "available": false,
+          "capacity": 4,
+          "maxMemoryBytes": 536870912,
+          "estimate": {
+            "cost": null,
+            "startupMs": null,
+            "warmStartupMs": null,
+            "transferMs": null
+          }
+        }
+      ]
+    },
+    {
+      "kind": "kubernetes",
+      "namespace": "action-space",
+      "runtimeClass": "YOUR-QUALIFIED-KATA-RUNTIME",
+      "storageClass": "YOUR-RETAINED-STORAGE",
+      "storage": "2Gi",
+      "readyTimeoutMs": 60000,
+      "recipes": {
+        "python3": "YOUR-REGISTRY/action-space-native@sha256:REVIEWED-DIGEST"
+      },
+      "candidates": [
+        {
+          "id": "kubernetes-ephemeral",
+          "capability": "sandbox",
+          "lifecycle": "ephemeral",
+          "profiles": ["sandbox-python-ephemeral-v1"],
+          "region": "operator-selected",
+          "trust": "development",
+          "available": false,
+          "capacity": 4,
+          "maxMemoryBytes": 536870912,
+          "estimate": {
+            "cost": null,
+            "startupMs": null,
+            "warmStartupMs": null,
+            "transferMs": null
+          }
+        },
+        {
+          "id": "kubernetes-persistent",
+          "capability": "sandbox",
+          "lifecycle": "persistent",
+          "profiles": ["sandbox-linux-persistent-v1"],
+          "region": "operator-selected",
+          "trust": "development",
+          "available": false,
+          "capacity": 4,
+          "maxMemoryBytes": 536870912,
+          "estimate": {
+            "cost": null,
+            "startupMs": null,
+            "warmStartupMs": null,
+            "transferMs": null
+          }
+        }
+      ]
+    }
+  ]
+}

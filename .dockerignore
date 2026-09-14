@@ -1,0 +1,27 @@
+**
+!Dockerfile
+!package.json
+!package-lock.json
+!tsconfig.json
+!src/
+!src/**
+!test/
+!test/**
+!examples/
+!examples/**
+!scripts/
+!scripts/**
+!migrations/
+!migrations/**
+!config/
+!config/local.json
+!providers/
+!providers/cloudflare/
+!providers/cloudflare/worker.js
+!providers/executor/
+!providers/executor/package.json
+!providers/executor/package-lock.json
+!providers/executor/runner.js
+!providers/executor/runtime.js
+!providers/executor/LICENSE
+# Credentials, journals, workspaces, artifacts, Git and host dependencies never enter the context.

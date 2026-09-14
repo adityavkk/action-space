@@ -1,0 +1,76 @@
+# Apply only with explicit approval in an isolated disposable development cluster.
+# Change the namespace/test-id together and pass both to the opt-in live harness.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: as-live-example
+  labels:
+    action-space.dev/test-id: example
+---
+apiVersion: node.k8s.io/v1
+kind: RuntimeClass
+metadata:
+  name: as-test-runc
+  labels:
+    action-space.dev/test-id: example
+handler: runc
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: test-budget
+  namespace: as-live-example
+spec:
+  hard:
+    pods: "4"
+    persistentvolumeclaims: "1"
+    requests.storage: 1Gi
+    requests.cpu: "2"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 1Gi
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-workload-network
+  namespace: as-live-example
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: action-space-control
+  namespace: as-live-example
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: action-space-control
+  namespace: as-live-example
+rules:
+  - apiGroups: [agents.x-k8s.io]
+    resources: [sandboxes]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [""]
+    resources: [pods, persistentvolumeclaims]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [get, create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: action-space-control
+  namespace: as-live-example
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: action-space-control
+subjects:
+  - kind: ServiceAccount
+    name: action-space-control
+    namespace: as-live-example

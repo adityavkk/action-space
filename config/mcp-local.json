@@ -1,0 +1,103 @@
+{
+  "local": true,
+  "principals": [
+    {
+      "tokenEnv": "ACTION_SPACE_TOKEN",
+      "auth": {
+        "tenant": "local",
+        "actor": "agent",
+        "thread": "demo",
+        "reviewer": false,
+        "grants": [
+          "code.execute",
+          "sandbox.run",
+          "sandbox.shell",
+          "sandbox.read",
+          "context.manage",
+          "data.read",
+          "resources.read",
+          "resources.write",
+          "mcp.configure",
+          "mcp.use:red",
+          "mcp.use:blue"
+        ]
+      }
+    },
+    {
+      "tokenEnv": "MCP_BLUE_API_TOKEN",
+      "auth": {
+        "tenant": "fixture-blue",
+        "actor": "agent",
+        "thread": "blue",
+        "reviewer": false,
+        "grants": ["code.execute", "mcp.configure", "mcp.use:blue"]
+      }
+    }
+  ],
+  "providers": [],
+  "mcp": {
+    "registry": [
+      {
+        "id": "red",
+        "revision": "fixture-v1",
+        "source": "company",
+        "endpoint": "http://mcp-red:3001/mcp",
+        "privateCidrs": ["172.16.0.0/12", "10.0.0.0/8", "192.168.0.0/16"]
+      },
+      {
+        "id": "blue",
+        "revision": "fixture-v1",
+        "source": "customer",
+        "endpoint": "http://mcp-blue:3001/mcp",
+        "privateCidrs": ["172.16.0.0/12", "10.0.0.0/8", "192.168.0.0/16"]
+      }
+    ],
+    "connections": [
+      {
+        "id": "red",
+        "revision": "v1",
+        "registry": "red",
+        "credential": {
+          "id": "red",
+          "revision": "v1",
+          "identity": "fixture-user-red"
+        }
+      },
+      {
+        "id": "blue",
+        "revision": "v1",
+        "registry": "blue",
+        "credential": {
+          "id": "blue",
+          "revision": "v1",
+          "identity": "fixture-user-blue"
+        }
+      }
+    ],
+    "credentials": [
+      {
+        "ref": {
+          "id": "red",
+          "revision": "v1",
+          "identity": "fixture-user-red"
+        },
+        "tokenEnv": "MCP_RED_TOKEN"
+      },
+      {
+        "ref": {
+          "id": "blue",
+          "revision": "v1",
+          "identity": "fixture-user-blue"
+        },
+        "tokenEnv": "MCP_BLUE_TOKEN"
+      }
+    ]
+  },
+  "scheduler": {
+    "region": "local",
+    "trust": "development",
+    "tenantConcurrency": 4,
+    "globalConcurrency": 24,
+    "maxCost": null
+  }
+}

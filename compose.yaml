@@ -1,0 +1,130 @@
+name: action-space
+
+x-runtime: &runtime
+  image: ${COMPOSE_PROJECT_NAME:-action-space}-local:dev
+  build: .
+  init: true
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs: ["/tmp:size=128m,mode=1777"]
+  pids_limit: 256
+
+services:
+  init:
+    <<: *runtime
+    command: [init]
+    network_mode: none
+    volumes:
+      - credentials:/run/action-space-secrets
+
+  postgres:
+    image: postgres:17.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: action_space
+      POSTGRES_DB: action_space
+      POSTGRES_PASSWORD_FILE: /run/action-space-secrets/postgres-password
+    depends_on:
+      init: { condition: service_completed_successfully }
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - credentials:/run/action-space-secrets:ro
+    healthcheck:
+      test: [CMD, pg_isready, -h, 127.0.0.1, -U, action_space, -d, action_space]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 128
+
+  migrate:
+    <<: *runtime
+    command: [migrate]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - credentials:/run/action-space-secrets:ro
+
+  action-space:
+    <<: *runtime
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    environment:
+      ACTION_SPACE_CONFIG: /app/config/local.json
+      OTEL_EXPORTER_OTLP_ENDPOINT:
+    ports:
+      - "127.0.0.1:${ACTION_SPACE_PORT:-3000}:3000"
+    volumes:
+      - data:/data
+      - credentials:/run/action-space-secrets:ro
+      - ${ACTION_SPACE_CONFIG_FILE:-./config/local.json}:/app/config/local.json:ro
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/health',{signal:AbortSignal.timeout(2000)}).then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 4s
+      retries: 30
+      start_period: 10s
+    mem_limit: 1g
+    cpus: 2
+
+  mcp-red:
+    <<: *runtime
+    profiles: [mcp]
+    entrypoint: [node, dist/examples/mcp-fixture.js]
+    environment: { MCP_FIXTURE_LABEL: red }
+    depends_on:
+      init: { condition: service_completed_successfully }
+    volumes:
+      - credentials:/run/action-space-secrets:ro
+      - fixture-red:/fixture
+    healthcheck: &mcp-health
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3001/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 3s
+      timeout: 4s
+      retries: 20
+    mem_limit: 256m
+
+  mcp-blue:
+    <<: *runtime
+    profiles: [mcp]
+    entrypoint: [node, dist/examples/mcp-fixture.js]
+    environment: { MCP_FIXTURE_LABEL: blue }
+    depends_on:
+      init: { condition: service_completed_successfully }
+    volumes:
+      - credentials:/run/action-space-secrets:ro
+      - fixture-blue:/fixture
+    healthcheck: *mcp-health
+    mem_limit: 256m
+
+  otel:
+    profiles: [observability]
+    image: otel/opentelemetry-collector-contrib:0.132.0
+    command: ["--config=/etc/otel.yaml"]
+    volumes: ["./config/otel.yaml:/etc/otel.yaml:ro"]
+    mem_limit: 256m
+
+# All names are scoped by the Compose project. Ordinary down never deletes these.
+volumes:
+  postgres:
+  data:
+  credentials:
+  fixture-red:
+  fixture-blue:
